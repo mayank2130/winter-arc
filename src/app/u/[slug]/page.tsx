@@ -5,12 +5,14 @@ import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  
   const link = await client.link.findUnique({
-    where: { slug: params.slug },
+    where: { slug },
   });
 
   if (!link) {
@@ -22,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const ogImageUrl = `${
     process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  }/api/og/${params.slug}`;
+  }/api/og/${slug}`;
 
   return {
     title: link.title,
@@ -50,12 +52,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function RedirectPage({ params }: Props) {
+  const { slug } = await params;
   const headersList = await headers();
   const userAgent = headersList.get("user-agent") || undefined;
   const referer = headersList.get("referer") || undefined;
 
   // Track the click and get link data
-  const link = await trackClick(params.slug, userAgent, referer);
+  const link = await trackClick(slug, userAgent, referer);
 
   if (!link) {
     notFound();
