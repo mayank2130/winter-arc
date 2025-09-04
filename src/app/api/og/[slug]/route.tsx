@@ -6,12 +6,11 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params; // ✅ no await
-    console.log("Generating OG for slug:", slug);
-
+    const { slug } = context.params;
+    console.log(request.url);
     const link = await client.link.findUnique({
       where: { slug },
     });
