@@ -1,69 +1,50 @@
 import { client } from "@/lib/prisma";
-import { trackClick } from "@/actions/upload";
-import { headers } from "next/headers";
-import { redirect, notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-interface Props {
-  params: Promise<{ slug: string }>;
-}
+type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  
-  const link = await client.link.findUnique({
-    where: { slug },
-  });
+  const link = await client.link.findUnique({ where: { slug } });
 
-  if (!link) {
-    return {
-      title: "Link not found",
-      description: "The requested link could not be found.",
-    };
-  }
-
-  const ogImageUrl = `${
-    process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"
-  }/api/og/${slug}`;
+  if (!link) return {};
 
   return {
     title: link.title,
-    description: `Check out: ${link.title}`,
+    description: "Shared via MyLink",
     openGraph: {
       title: link.title,
-      description: `Check out: ${link.title}`,
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: link.title,
-        },
-      ],
-      type: "website",
+      images: [`${process.env.NEXT_PUBLIC_URL}/api/og/${slug}`],
+      url: `${process.env.NEXT_PUBLIC_URL}/u/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
       title: link.title,
-      description: `Check out: ${link.title}`,
-      images: [ogImageUrl],
+      images: [`${process.env.NEXT_PUBLIC_URL}/api/og/${slug}`],
     },
   };
 }
 
-export default async function RedirectPage({ params }: Props) {
+export default async function LinkPreview({ params }: Props) {
   const { slug } = await params;
-  const headersList = await headers();
-  const userAgent = headersList.get("user-agent") || undefined;
-  const referer = headersList.get("referer") || undefined;
+  const link = await client.link.findUnique({ where: { slug } });
 
-  // Track the click and get link data
-  const link = await trackClick(slug, userAgent, referer);
+  if (!link) return <div>Link not found</div>;
 
-  if (!link) {
-    notFound();
-  }
-
-  // Redirect to the target URL
-  redirect(link.targetUrl);
+  return (
+    <html>
+      <body>
+        <p>Redirecting to {link.targetUrl}...</p>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              setTimeout(() => {
+                window.location.href = "${link.targetUrl}";
+              }, 1000);
+            `,
+          }}
+        />
+      </body>
+    </html>
+  );
 }
