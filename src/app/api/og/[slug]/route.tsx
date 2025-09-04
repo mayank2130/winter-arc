@@ -6,10 +6,11 @@ export const runtime = "nodejs";
 
 export async function GET(
   request: NextRequest,
-  context: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const { slug } = context.params;
+    // Await the params since they're now a Promise
+    const { slug } = await params;
     console.log(request.url);
     const link = await client.link.findUnique({
       where: { slug },
