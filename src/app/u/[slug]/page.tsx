@@ -1,17 +1,7 @@
 import { client } from "@/lib/prisma";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "default-no-store";
-
 type Props = { params: Promise<{ slug: string }> };
-
-function getBaseUrl() {
-  if (process.env.NEXT_PUBLIC_URL) return process.env.NEXT_PUBLIC_URL;
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return "http://localhost:3000";
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -19,28 +9,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!link) return {};
 
-  const base = getBaseUrl();
-  const ogImage = `${base}/api/og/${slug}`;
-  const pageUrl = `${base}/u/${slug}`;
-
   return {
     title: link.title,
     description: "Shared via MyLink",
     openGraph: {
       title: link.title,
-      description: "Shared via MyLink",
-      url: pageUrl,
-      images: [ogImage],
-      type: "website",
-      siteName: "MyLink",
+      images: [`${process.env.NEXT_PUBLIC_URL}/api/og/${slug}`],
+      url: `${process.env.NEXT_PUBLIC_URL}/u/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
       title: link.title,
-      description: "Shared via MyLink",
-      images: [ogImage],
+      images: [`${process.env.NEXT_PUBLIC_URL}/api/og/${slug}`],
     },
-    metadataBase: new URL(base),
   };
 }
 
@@ -51,22 +32,19 @@ export default async function LinkPreview({ params }: Props) {
   if (!link) return <div>Link not found</div>;
 
   return (
-    <main className="min-h-screen flex items-center justify-center">
-      <div className="text-center p-6">
+    <html>
+      <body>
         <p>Redirecting to {link.targetUrl}...</p>
-        <noscript>
-          <a href={link.targetUrl}>Click here if you are not redirected.</a>
-        </noscript>
         <script
           dangerouslySetInnerHTML={{
             __html: `
               setTimeout(() => {
-                window.location.href = ${JSON.stringify(link.targetUrl)};
+                window.location.href = "${link.targetUrl}";
               }, 1000);
             `,
           }}
         />
-      </div>
-    </main>
+      </body>
+    </html>
   );
 }
