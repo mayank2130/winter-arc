@@ -1,0 +1,62 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+      {
+        "type": "Feature",
+        "properties": { "continent": "North America" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ -168.12, 71.38 ], [ -52.62, 71.38 ], [ -52.62, 15.0 ], [ -168.12, 15.0 ], [ -168.12, 71.38 ]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "continent": "South America" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ -82.0, 15.0 ], [ -34.0, 15.0 ], [ -34.0, -56.0 ], [ -82.0, -56.0 ], [ -82.0, 15.0 ]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "continent": "Europe" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ -25.0, 71.0 ], [ 45.0, 71.0 ], [ 45.0, 36.0 ], [ -25.0, 36.0 ], [ -25.0, 71.0 ]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "continent": "Africa" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ -20.0, 36.0 ], [ 52.0, 36.0 ], [ 52.0, -35.0 ], [ -20.0, -35.0 ], [ -20.0, 36.0 ]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "continent": "Asia" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ 25.0, 77.0 ], [ 180.0, 77.0 ], [ 180.0, 5.0 ], [ 25.0, 5.0 ], [ 25.0, 77.0 ]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "continent": "Australia" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ 110.0, -10.0 ], [ 155.0, -10.0 ], [ 155.0, -45.0 ], [ 110.0, -45.0 ], [ 110.0, -10.0 ]]]
+        }
+      },
+      {
+        "type": "Feature",
+        "properties": { "continent": "Antarctica" },
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ -180.0, -60.0 ], [ 180.0, -60.0 ], [ 180.0, -90.0 ], [ -180.0, -90.0 ], [ -180.0, -60.0 ]]]
+        }
+      }
+    ]
+  }
+  
