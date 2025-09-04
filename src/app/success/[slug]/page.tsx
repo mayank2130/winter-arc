@@ -2,6 +2,7 @@ import { client } from '@/lib/prisma'
 import { getBaseUrl } from '@/lib/utils'
 import { notFound } from 'next/navigation'
 import { CopyButton } from '@/components/CopyButton'
+import { CopyImageButton } from '@/components/CopyImageButton'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -18,7 +19,9 @@ export default async function SuccessPage({ params }: Props) {
     notFound()
   }
 
-  const shareUrl = `${getBaseUrl()}/u/${link.slug}`
+  const baseUrl = getBaseUrl()
+  const shareUrl = `${baseUrl}/u/${link.slug}`
+  const ogImageUrl = `${baseUrl}/api/og/${link.slug}`
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4">
@@ -65,6 +68,7 @@ export default async function SuccessPage({ params }: Props) {
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm"
                 />
                 <CopyButton shareUrl={shareUrl} />
+                <CopyImageButton ogImageUrl={ogImageUrl} />
               </div>
             </div>
 
