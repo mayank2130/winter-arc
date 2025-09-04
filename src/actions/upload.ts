@@ -25,13 +25,11 @@ export async function createLink(formData: FormData) {
         imageUrl,
       },
     })
-
     revalidatePath('/')
     redirect(`/success/${slug}`)
   } catch (error: any) {
-    // Check if this is a redirect error (which is expected)
     if (error?.digest?.includes('NEXT_REDIRECT')) {
-      throw error // Re-throw redirect errors
+      throw error
     }
     
     console.error('Error creating link:', error)

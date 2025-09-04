@@ -6,11 +6,13 @@ export const runtime = 'edge'
 
 export async function GET(
   request: NextRequest,
-  context: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
+    const { slug } = await params
+    console.log(request.url)
     const link = await client.link.findUnique({
-      where: { slug: context.params.slug }
+      where: { slug }
     })
 
     if (!link) {
