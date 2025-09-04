@@ -15,10 +15,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const title = link.title || "Check this out";
   const description = "Custom shared link";
-  const fallbackImage = `${process.env.NEXT_PUBLIC_URL || "http://localhost:3000"}/api/og/${slug}`;
-  const image = link.imageUrl || fallbackImage;
 
   const base = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+  const fallbackImage = `${base}/api/og/${slug}`;
+  const image = link.imageUrl || fallbackImage;
 
   return {
     title,
@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card: "summary_large_image",
       title,
       description,
-      images: [image],
+      images: image, // ✅ string, not array
     },
   };
 }
@@ -53,7 +53,10 @@ export default async function LinkPreview({ params }: Props) {
   if (!link) return <div>Link not found</div>;
 
   return (
-    <html>
+    <html lang="en">
+      <head>
+        <meta charSet="UTF-8" />
+      </head>
       <body>
         <p>Redirecting to {link.targetUrl}...</p>
         <script
