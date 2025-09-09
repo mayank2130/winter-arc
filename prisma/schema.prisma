@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider   = "prisma-client-js"
-  engineType = "binary"
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
@@ -14,31 +14,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Link {
+model User {
+  id             String        @id @default(cuid())
+  clerkId        String        @unique
+  email          String        @unique
+  name           String?
+  imageUrl       String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  links          Link[]
+  subscription   Subscription?
+  @@map("users")
+}
+
+enum SubscriptionType {
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+model Subscription {
   id        String   @id @default(cuid())
-  slug      String   @unique
-  title     String
-  targetUrl String
-  imageUrl  String
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      SubscriptionType
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  analytics Analytics[]
-  
+
+  links     Link[]
+  @@map("subscriptions")
+}
+
+model Link {
+  id             String   @id @default(cuid())
+  shortCode      String   @unique
+  originalUrl    String
+  title          String?
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  userId         String
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  subscriptionId String?
+  subscription   Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  clicks         Click[]
   @@map("links")
 }
 
-model Analytics {
-  id        String   @id @default(cuid())
-  linkId    String
-  link      Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
-  
-  userAgent String?
-  referer   String?
-  ip        String?
-  country   String?
-  
-  createdAt DateTime @default(now())
-  
-  @@map("analytics")
+model Click {
+  id               String   @id @default(cuid())
+  linkId           String
+  link             Link     @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  ipAddress        String?
+  userAgent        String?
+  referer          String?
+  referrerDomain   String?  // NEW: Domain that referred the click
+  referrerSource   String?  // NEW: Specific source (Twitter, Facebook, Google, etc.)
+  referrerMedium   String?  // NEW: Medium category (Social, Search, Email, etc.)
+  referrerCampaign String?  // NEW: Campaign tracking (UTM parameters)
+  country          String?
+  device           String?
+  createdAt        DateTime @default(now())
+
+  @@map("clicks")
 }
