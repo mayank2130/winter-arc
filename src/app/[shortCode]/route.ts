@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { UAParser } from "ua-parser-js";
 import { client } from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ shortCode: string }> }
+  context: { params: Promise<{ shortCode: string }> }
 ) {
   try {
-    const { shortCode } = await params;
+    const { shortCode } = await context.params;
 
     const link = await client.link.findUnique({
       where: { shortCode },
