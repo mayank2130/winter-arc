@@ -4,6 +4,7 @@ import { client } from '@/lib/prisma'
 import { generateSlug } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { currentUser } from '@clerk/nextjs/server'
 
 export async function createLink(formData: FormData) {
   const title = formData.get('title') as string
@@ -17,8 +18,10 @@ export async function createLink(formData: FormData) {
   const shortCode = generateSlug()
 
   try {
+    const user = await currentUser()
     const link = await client.link.create({
       data: {
+        userId: user?.id || '',
         shortCode,
         title,
         originalUrl:  targetUrl,
