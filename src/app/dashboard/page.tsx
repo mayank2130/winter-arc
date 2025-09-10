@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,57 +10,65 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import {
-  Globe,
-  ExternalLink,
-  Plus,
-  BarChart3,
-  Settings,
-  ChevronDown,
-  Copy,
-  Check,
-  ArrowRight,
-} from "lucide-react";
+import { BarChart3, ChevronDown, Copy, Check, ArrowRight } from "lucide-react";
 import { DailyClicksChart } from "@/components/DailyChart";
 import { RoundedPieChart } from "@/components/DeviceChart";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
   getAllLinks,
-  createLink,
   type LinkData,
   type CreateLinkInput,
+  createLink
 } from "@/actions/link";
 import TrafficChart from "@/components/Landing/Traffic";
 import InteractiveMap from "@/components/Map";
+import NewLinkForm from "@/components/Dashboard/NewLinkForm";
+
 
 interface NewLink {
   url: string;
   title: string;
   description: string;
 }
-
 const TrackableLinksApp = () => {
   const [links, setLinks] = useState<LinkData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedLink, setSelectedLink] = useState<LinkData | null>(null);
+  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [newLink, setNewLink] = useState<NewLink>({
     url: "",
     title: "",
     description: "",
   });
-  const [selectedLink, setSelectedLink] = useState<LinkData | null>(null);
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [copiedLinkId, setCopiedLinkId] = useState<string | null>(null);
+  const createLinkHandler = async () => {
+    if (!newLink.url) return;
+
+    try {
+      const input: CreateLinkInput = {
+        url: newLink.url,
+        title: newLink.title,
+        description: newLink.description,
+      };
+
+      const result = await createLink(input);
+
+      if (result.success && result.data) {
+        setLinks([result.data, ...links]);
+        setSelectedLink(result.data);
+        setNewLink({ url: "", title: "", description: "" });
+        setCreateDialogOpen(false);
+      } else {
+        console.error("Error creating link:", result.error);
+      }
+    } catch (error) {
+      console.error("Error creating link:", error);
+    }
+  };
+
   const loadLinks = async () => {
     try {
       setLoading(true);
@@ -85,47 +94,98 @@ const TrackableLinksApp = () => {
     loadLinks();
   }, []);
 
-  const createLinkHandler = async () => {
-    if (!newLink.url) return;
-
-    try {
-      const input: CreateLinkInput = {
-        url: newLink.url,
-        title: newLink.title,
-        description: newLink.description,
-      };
-
-      const result = await createLink(input);
-
-      if (result.success && result.data) {
-        setLinks([result.data, ...links]);
-        setSelectedLink(result.data);
-        setNewLink({ url: "", title: "", description: "" });
-        setCreateDialogOpen(false);
-      } else {
-        console.error("Error creating link:", result.error);
-      }
-    } catch (error) {
-      console.error("Error creating link:", error);
-    }
-  };
   // Update the short URL display to use your domain
   const getShortUrl = (shortCode: string) => {
     return `${window.location.origin}/${shortCode}`;
   };
 
   const AnalyticsView = () => {
+    const [isOpen, setIsOpen] = useState(false);
+
     const link = selectedLink || links[0];
 
-    if (!link) {
+    if (loading) {
       return (
-        <div className="text-center py-12">
-          <BarChart3 className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400">No links available for analytics.</p>
+        <div className="flex flex-col items-center justify-center py-12">
+          <div className="text-white/70">Loading...</div>
         </div>
       );
     }
-    const [isOpen, setIsOpen] = useState(false);
+
+    if (!link) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12">
+          <BarChart3 className="w-16 h-16 text-gray-600 mb-6" />
+
+          <Card className="w-full max-w-2xl bg-[#383838] px-2 sm:px-5 border border-[#282828]">
+            <CardHeader className="space-y-2">
+              <CardTitle className="text-white/80 text-xl sm:text-2xl">
+                Create Trackable Link
+              </CardTitle>
+              <CardDescription className="text-white/50 text-sm sm:text-base">
+                Transform any URL into a powerful tracking link with detailed
+                analytics.
+              </CardDescription>
+            </CardHeader>
+            <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-300">
+                  Destination URL *
+                </label>
+                <Input
+                  type="url"
+                  placeholder="https://your-website.com/page"
+                  className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-[#282828] border border-[#383838] text-sm sm:text-base text-white/80 rounded-lg focus:ring-0 placeholder-white/50"
+                  value={newLink.url}
+                  onChange={(e) =>
+                    setNewLink({ ...newLink, url: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-300">
+                  Link Title
+                </label>
+                <Input
+                  type="text"
+                  placeholder="My Product Landing Page"
+                  className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-[#282828] border border-[#383838] text-sm sm:text-base text-white/80 rounded-lg focus:ring-0 placeholder-white/50"
+                  value={newLink.title}
+                  onChange={(e) =>
+                    setNewLink({ ...newLink, title: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-1 sm:space-y-2">
+                <label className="block text-xs sm:text-sm font-medium text-gray-300">
+                  Description
+                </label>
+                <Textarea
+                  placeholder="Brief description for your reference"
+                  rows={3}
+                  className="w-full px-3 sm:px-4 py-1.5 sm:py-2 bg-[#282828] border border-[#383838] text-sm sm:text-base text-white/80 rounded-lg focus:ring-0 placeholder-white/50"
+                  value={newLink.description}
+                  onChange={(e) =>
+                    setNewLink({
+                      ...newLink,
+                      description: e.target.value,
+                    })
+                  }
+                />
+              </div>
+            </div>
+            <CardFooter className="flex justify-end px-2 sm:px-6 pb-4 sm:pb-6">
+              <Button
+                onClick={createLinkHandler}
+                className="bg-[#e16540] hover:bg-[#e16540]/80 text-white text-sm sm:text-base px-3 sm:px-4 py-1.5 sm:py-2"
+              >
+                Create Link
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      );
+    }
 
     return (
       <div className="max-w-7xl py-20 mx-auto space-y-6 bg-[#1f1f1f]">
@@ -228,85 +288,12 @@ const TrackableLinksApp = () => {
             </Button>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-[#e16540] hover:bg-[#e16540]/80 text-white cursor-pointer">
-                  <Plus className="w-4 h-4 mr-2" /> New Link
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="bg-[#383838] border border-[#282828]">
-                <DialogHeader>
-                  <DialogTitle className="text-white/80">
-                    Create Trackable Link
-                  </DialogTitle>
-                  <DialogDescription className="text-white/50">
-                    Transform any URL into a powerful tracking link with
-                    detailed analytics.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4 mt-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Destination URL *
-                    </label>
-                    <Input
-                      type="url"
-                      placeholder="https://your-website.com/page"
-                      className="w-full px-4 py-2 bg-[#282828] border border-[#383838] text-white/80 rounded-lg focus:ring-0 placeholder-white/50"
-                      value={newLink.url}
-                      onChange={(e) =>
-                        setNewLink({ ...newLink, url: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Link Title
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="My Product Landing Page"
-                      className="w-full px-4 py-2 bg-[#282828] border border-[#383838] text-white/80 rounded-lg focus:ring-0 placeholder-white/50"
-                      value={newLink.title}
-                      onChange={(e) =>
-                        setNewLink({ ...newLink, title: e.target.value })
-                      }
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Description
-                    </label>
-                    <Textarea
-                      placeholder="Brief description for your reference"
-                      rows={3}
-                      className="w-full px-4 py-2 bg-[#282828] border border-[#383838] text-white/80 rounded-lg focus:ring-0 placeholder-white/50"
-                      value={newLink.description}
-                      onChange={(e) =>
-                        setNewLink({
-                          ...newLink,
-                          description: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button
-                    onClick={createLinkHandler}
-                    className="bg-[#e16540] hover:bg-[#e16540]/80 text-white"
-                  >
-                    Create Link
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-
-            <button className="p-2 text-gray-400 hover:text-gray-300">
-              <Settings className="w-5 h-5" />
-            </button>
-          </div>
+          <NewLinkForm
+            links={links}
+            setLinks={setLinks}
+            selectedLink={selectedLink}
+            setSelectedLink={setSelectedLink}
+          />
         </div>
 
         <DailyClicksChart
