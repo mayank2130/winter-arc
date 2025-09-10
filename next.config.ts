@@ -13,6 +13,13 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['@prisma/client', 'prisma'],
+  },
+  webpack: (config: any) => {
+    config.externals.push({ prisma: "commonjs prisma" });
+    return config;
+  },
 }
 
 module.exports = nextConfig
